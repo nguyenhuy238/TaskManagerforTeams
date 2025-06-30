@@ -17,6 +17,8 @@ public partial class User
 
     public string Role { get; set; } = null!;
 
+    public decimal BaseSalary { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? LastLogin { get; set; }
@@ -24,6 +26,16 @@ public partial class User
     public virtual ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+    public virtual ICollection<Payroll> PayrollApprovedByNavigations { get; set; } = new List<Payroll>();
+
+    public virtual ICollection<PayrollHistory> PayrollHistoryChangedByNavigations { get; set; } = new List<PayrollHistory>();
+
+    public virtual ICollection<PayrollHistory> PayrollHistoryUsers { get; set; } = new List<PayrollHistory>();
+
+    public virtual ICollection<Payroll> PayrollUsers { get; set; } = new List<Payroll>();
+
+    public virtual ICollection<PerformanceMetric> PerformanceMetrics { get; set; } = new List<PerformanceMetric>();
 
     public virtual ICollection<ProjectUserRole> ProjectUserRoles { get; set; } = new List<ProjectUserRole>();
 

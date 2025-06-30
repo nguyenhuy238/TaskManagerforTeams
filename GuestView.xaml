@@ -1,0 +1,52 @@
+﻿<UserControl x:Class="TaskManager.GuestView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Tiêu đề -->
+        <TextBlock Text="Guest Dashboard"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Margin="0,10"/>
+
+        <!-- Danh sách dự án -->
+        <DataGrid x:Name="ProjectsDataGrid"
+                  Grid.Row="1"
+                  AutoGenerateColumns="False"
+                  Margin="10"
+                  IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Project ID" Binding="{Binding ProjectId}" />
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="Start Date" Binding="{Binding StartDate}" />
+                <DataGridTextColumn Header="End Date" Binding="{Binding EndDate}" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Danh sách nhiệm vụ -->
+        <DataGrid x:Name="TasksDataGrid"
+                  Grid.Row="2"
+                  AutoGenerateColumns="False"
+                  Margin="10"
+                  IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Task ID" Binding="{Binding TaskId}" />
+                <DataGridTextColumn Header="Title" Binding="{Binding Title}" />
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
+                <DataGridTextColumn Header="Due Date" Binding="{Binding DueDate}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

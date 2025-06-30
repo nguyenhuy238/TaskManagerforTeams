@@ -11,6 +11,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TaskManager.Models;
 
+
 namespace TaskManager
 {
     /// <summary>
@@ -18,10 +19,11 @@ namespace TaskManager
     /// </summary>
     public partial class MainWindow : Window
     {
-        private TaskManagerDbContext  context = new();
+        private TaskManagerDb1Context _context = new();
         public MainWindow()
         {
             InitializeComponent();
+            _context = new TaskManagerDb1Context();
         }
 
         private void btnLogin_Click(object sender, RoutedEventArgs e)
@@ -29,64 +31,108 @@ namespace TaskManager
             string username = txtUsername.Text.Trim();
             string password = txtPassword.Password;
 
-            // Kiểm tra đầu vào
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                txtError.Text = "Please enter both username and password.";
-                txtError.Visibility = Visibility.Visible;
+                txtErrorMessage.Text = "Please enter both username and password.";
+                txtErrorMessage.Visibility = Visibility.Visible;
                 return;
             }
 
             try
             {
-                // Tìm người dùng trong cơ sở dữ liệu
-                var user = context.Users
-                    .FirstOrDefault(u => u.Username == username);
+                // Mã hóa mật khẩu nhập vào (SHA256)
+                string passwordHash = ComputeSha256Hash(password);
+
+                // Truy vấn người dùng
+                var user = _context.Users
+                    .FirstOrDefault(u => u.Username == username && u.PasswordHash == passwordHash);
 
                 if (user == null)
                 {
-                    txtError.Text = "Invalid username.";
-                    txtError.Visibility = Visibility.Visible;
+                    txtErrorMessage.Text = "Invalid username or password.";
+                    txtErrorMessage.Visibility = Visibility.Visible;
                     return;
                 }
 
-                // So sánh mật khẩu (giả định PasswordHash là SHA256)
-                string passwordHash = ComputeSha256Hash(password);
-                if (user.PasswordHash != passwordHash)
-                {
-                    txtError.Text = "Invalid password.";
-                    txtError.Visibility = Visibility.Visible;
-                    return;
-                }
-
-                // Cập nhật thời gian đăng nhập
+                // Cập nhật thời gian đăng nhập cuối
                 user.LastLogin = DateTime.Now;
-                context.SaveChanges();
+                _context.SaveChanges();
 
-                // Chuyển sang giao diện chính
-                LoginPanel.Visibility = Visibility.Collapsed;
-                MainPanel.Visibility = Visibility.Visible;
-                txtError.Visibility = Visibility.Collapsed;
+                // Lưu thông tin người dùng
+                CurrentUser.Instance.SetUser(user);
+
+                // Chuyển hướng đến dashboard tương ứng
+                LoadContentBasedOnRole();
             }
             catch (Exception ex)
             {
-                txtError.Text = $"An error occurred: {ex.Message}";
-                txtError.Visibility = Visibility.Visible;
+                txtErrorMessage.Text = $"Error: {ex.Message}";
+                txtErrorMessage.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void LoadContentBasedOnRole()
+        {
+            var user = CurrentUser.Instance.Current;
+            if (user == null)
+            {
+                MessageBox.Show("No user logged in.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Chọn UserControl dựa trên vai trò
+            switch (user.Role)
+            {
+                case "Admin":
+                    MainContent.Content = new AdminView();
+                    break;
+                case "ProjectManager":
+                    MainContent.Content = new ProjectManagerView();
+                    break;
+                case "TeamMember":
+                    MainContent.Content = new TeamMemberView();
+                    break;
+                case "Guest":
+                    MainContent.Content = new GuestView();
+                    break;
+                default:
+                    MessageBox.Show("Invalid user role.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    break;
             }
         }
 
         private string ComputeSha256Hash(string rawData)
         {
-            using (SHA256 sha256Hash = SHA256.Create())
-            {
-                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    builder.Append(bytes[i].ToString("x2"));
-                }
-                return builder.ToString();
-            }
+            return rawData;
+            //using (SHA256 sha256 = SHA256.Create())
+            //{
+            //    byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+            //    StringBuilder builder = new StringBuilder();
+            //    for (int i = 0; i < bytes.Length; i++)
+            //    {
+            //        builder.Append(bytes[i].ToString("x2"));
+            //    }
+            //    return builder.ToString();
+            //}
+        }
+    }
+
+    // Lớp singleton để lưu thông tin người dùng
+    public class CurrentUser
+    {
+        private static CurrentUser _instance;
+        public static CurrentUser Instance => _instance ??= new CurrentUser();
+
+        public User Current { get; private set; }
+
+        public void SetUser(User user)
+        {
+            Current = user;
+        }
+
+        public void Clear()
+        {
+            Current = null;
         }
     }
 }
