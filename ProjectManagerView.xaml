@@ -13,13 +13,30 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Tiêu đề -->
-        <TextBlock Text="Project Manager Dashboard"
-                   FontSize="24"
-                   FontWeight="Bold"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   Margin="0,10"/>
+        <!-- Tiêu đề, nút Create Project và Logout -->
+        <Grid Grid.Row="0">
+            <TextBlock Text="Project Manager Dashboard"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="0,10"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,0">
+                <Button x:Name="btnCreateProject"
+                        Content="Create Project"
+                        Width="120"
+                        Height="30"
+                        materialDesign:ButtonAssist.CornerRadius="5"
+                        Click="CreateProject_Click"
+                        Margin="0,0,10,0"/>
+                <Button x:Name="btnLogout"
+                        Content="Logout"
+                        Width="100"
+                        Height="30"
+                        materialDesign:ButtonAssist.CornerRadius="5"
+                        Click="Logout_Click"/>
+            </StackPanel>
+        </Grid>
 
         <!-- Danh sách nhiệm vụ -->
         <DataGrid x:Name="TasksDataGrid"

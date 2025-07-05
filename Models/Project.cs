@@ -24,4 +24,6 @@ public partial class Project
     public virtual ICollection<ProjectUserRole> ProjectUserRoles { get; set; } = new List<ProjectUserRole>();
 
     public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
+
+    
 }

@@ -33,7 +33,18 @@ namespace TaskManager
 
         private void LoadTasks()
         {
+            // Lấy ID của người dùng hiện tại
+            int currentUserId = GetCurrentUserId();
+
+            // Lấy danh sách ProjectId mà người dùng có vai trò ProjectManager
+            var managedProjectIds = _context.ProjectUserRoles
+                .Where(pur => pur.UserId == currentUserId && pur.Role == "ProjectManager")
+                .Select(pur => pur.ProjectId)
+                .ToList();
+
+            // Lấy các nhiệm vụ thuộc các dự án mà người dùng quản lý
             var tasks = _context.Tasks
+                .Where(t => managedProjectIds.Contains(t.ProjectId))
                 .Select(t => new
                 {
                     t.TaskId,
@@ -44,14 +55,30 @@ namespace TaskManager
                         .Select(u => u.FullName)
                         .FirstOrDefault() ?? "Unassigned",
                     t.DueDate
-                }).ToList();
+                })
+                .ToList();
+
             TasksDataGrid.ItemsSource = tasks; // Gán dữ liệu vào DataGrid
         }
 
         private void LoadProgressReport()
         {
-            var totalTasks = _context.Tasks.Count();
-            var completedTasks = _context.Tasks.Count(t => t.Status == "Done");
+            // Lấy ID của người dùng hiện tại
+            int currentUserId = GetCurrentUserId();
+
+            // Lấy danh sách ProjectId mà người dùng có vai trò ProjectManager
+            var managedProjectIds = _context.ProjectUserRoles
+                .Where(pur => pur.UserId == currentUserId && pur.Role == "ProjectManager")
+                .Select(pur => pur.ProjectId)
+                .ToList();
+
+            // Tính tiến độ dựa trên các nhiệm vụ thuộc dự án của người dùng
+            var totalTasks = _context.Tasks
+                .Where(t => managedProjectIds.Contains(t.ProjectId))
+                .Count();
+            var completedTasks = _context.Tasks
+                .Where(t => managedProjectIds.Contains(t.ProjectId) && t.Status == "Done")
+                .Count();
             var progress = totalTasks > 0 ? (double)completedTasks / totalTasks * 100 : 0;
             ProgressReportText.Text = $"{progress:F2}% completed ({completedTasks}/{totalTasks} tasks)";
         }
@@ -102,6 +129,20 @@ namespace TaskManager
             }
         }
 
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                CurrentUser.Instance.Clear();
+                Window mainWindow = Window.GetWindow(this);
+                if (mainWindow is MainWindow mw)
+                {
+                    mw.ShowLoginForm();
+                }
+            }
+        }
+
         private int? GetUserIdFromSelection()
         {
             // Placeholder: Thay bằng logic thực tế (ví dụ: ComboBox để chọn người dùng)
@@ -118,5 +159,69 @@ namespace TaskManager
             // Cần thêm giao diện UI (ComboBox hoặc dialog) để chọn trạng thái
             return statuses[0]; // Giả lập trả về "ToDo"
         }
+
+        private void CreateProject_Click(object sender, RoutedEventArgs e)
+        {
+            // Mở CreateProjectWindow
+            var createProjectWindow = new CreateProjectWindow();
+            createProjectWindow.Owner = Window.GetWindow(this);
+            createProjectWindow.ProjectCreated += (name, description, startDate, endDate) =>
+            {
+                try
+                {
+                    // Bắt đầu transaction để đảm bảo toàn vẹn dữ liệu
+                    using (var transaction = _context.Database.BeginTransaction())
+                    {
+                        // Tạo dự án mới
+                        var newProject = new Project
+                        {
+                            Name = name,
+                            Description = description,
+                            StartDate = DateOnly.FromDateTime(startDate), // Convert DateTime to DateOnly
+                            EndDate = endDate.HasValue ? DateOnly.FromDateTime(endDate.Value) : null, // Handle nullable DateTime
+                            CreatedBy = GetCurrentUserId(),
+                            CreatedAt = DateTime.Now
+                        };
+
+                        // Lưu dự án vào bảng Projects
+                        _context.Projects.Add(newProject);
+                        _context.SaveChanges(); // Lưu để lấy ProjectId
+
+                        // Gán vai trò ProjectManager cho người tạo trong ProjectUserRoles
+                        var projectUserRole = new ProjectUserRole
+                        {
+                            ProjectId = newProject.ProjectId,
+                            UserId = GetCurrentUserId(),
+                            Role = "ProjectManager",
+                            AssignedAt = DateTime.Now
+                        };
+
+                        _context.ProjectUserRoles.Add(projectUserRole);
+                        _context.SaveChanges();
+
+                        // Commit transaction
+                        transaction.Commit();
+
+                        MessageBox.Show("Project created and role assigned successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error creating project or assigning role: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            };
+            createProjectWindow.ShowDialog();
+        }
+
+        int GetCurrentUserId()
+        {
+            var currentUser = CurrentUser.Instance.Current;
+            
+                return currentUser.UserId;
+            
+            
+        }
+
+      
     }
 }

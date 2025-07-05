@@ -13,13 +13,24 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Tiêu đề -->
-        <TextBlock Text="Team Member Dashboard"
-                   FontSize="24"
-                   FontWeight="Bold"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   Margin="0,10"/>
+        <!-- Tiêu đề và nút Logout -->
+        <Grid Grid.Row="0">
+            <TextBlock Text="Team Member Dashboard"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="0,10"/>
+            <Button x:Name="btnLogout"
+                    Content="Logout"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,10,10,0"
+                    Width="100"
+                    Height="30"
+                    materialDesign:ButtonAssist.CornerRadius="5"
+                    Click="Logout_Click"/>
+        </Grid>
 
         <!-- Danh sách nhiệm vụ được giao -->
         <DataGrid x:Name="AssignedTasksDataGrid"
@@ -37,9 +48,9 @@
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox x:Name="StatusComboBox" 
-                                         Width="100" 
-                                         SelectedItem="{Binding Status, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         DisplayMemberPath="Content">
+                                          Width="100" 
+                                          SelectedItem="{Binding Status, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          DisplayMemberPath="Content">
                                     <ComboBoxItem Content="ToDo"/>
                                     <ComboBoxItem Content="InProgress"/>
                                     <ComboBoxItem Content="Done"/>

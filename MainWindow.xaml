@@ -4,71 +4,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:local="clr-namespace:TaskManager"
         mc:Ignorable="d"
         Title="Task Manager" 
         Height="600" 
         Width="1000"
-        WindowStartupLocation="CenterScreen"
-       >
+        WindowStartupLocation="CenterScreen">
     <Grid>
         <ContentControl x:Name="MainContent">
-            <!-- Màn hình đăng nhập mặc định -->
-            <Grid Margin="20" MaxWidth="500">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- Tiêu đề -->
-                <TextBlock Grid.Row="0"
-                           Text="Task Manager Login"
-                           FontSize="24"
-                           FontWeight="Bold"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,20"
-                           />
-
-                <!-- Form đăng nhập -->
-                <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                    <!-- Username -->
-                    <materialDesign:Card Margin="0,0,0,15" Padding="10">
-                        <TextBox x:Name="txtUsername"
-                                 materialDesign:HintAssist.Hint="Username"
-                                 
-                                 FontSize="16"
-                                 Width="300"/>
-                    </materialDesign:Card>
-
-                    <!-- Password -->
-                    <materialDesign:Card Margin="0,0,0,15" Padding="10">
-                        <PasswordBox x:Name="txtPassword"
-                                     materialDesign:HintAssist.Hint="Password"
-                                   
-                                     FontSize="16"
-                                     Width="300"/>
-                    </materialDesign:Card>
-
-                    <!-- Thông báo lỗi -->
-                    <TextBlock x:Name="txtErrorMessage"
-                               Foreground="Red"
-                               FontSize="14"
-                               TextAlignment="Center"
-                               Visibility="Collapsed"
-                               Margin="0,0,0,15"
-                               />
-                </StackPanel>
-
-                <!-- Nút Login -->
-                <Button Grid.Row="2"
-                        x:Name="btnLogin"
-                        Content="Login"
-                        Width="150"
-                        Height="40"
-                        
-                        materialDesign:ButtonAssist.CornerRadius="10"
-                        Click="btnLogin_Click"/>
-            </Grid>
+            <!-- Màn hình Login mặc định -->
+            <local:LoginView/>
         </ContentControl>
     </Grid>
 </Window>

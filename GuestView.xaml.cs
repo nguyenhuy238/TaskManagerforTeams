@@ -43,14 +43,14 @@ namespace TaskManager
                     .ToList();
 
                 ProjectsDataGrid.ItemsSource = accessibleProjects;
-                if (accessibleProjects.Count == 0)
-                {
-                    MessageBox.Show("No projects accessible for the guest.");
-                }
+                //if (accessibleProjects.Count == 0)
+                //{
+                //    MessageBox.Show("Không có dự án nào khả dụng cho khách.");
+                //}
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading projects: {ex.Message}");
+                MessageBox.Show($"Lỗi khi tải dự án: {ex.Message}");
             }
         }
 
@@ -74,14 +74,24 @@ namespace TaskManager
                     }).ToList();
 
                 TasksDataGrid.ItemsSource = tasks;
-                if (tasks.Count == 0)
-                {
-                    MessageBox.Show("No tasks accessible for the guest.");
-                }
+                //if (tasks.Count == 0)
+                //{
+                //    MessageBox.Show("Không có công việc nào khả dụng cho khách.");
+                //}
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading tasks: {ex.Message}");
+                MessageBox.Show($"Lỗi khi tải công việc: {ex.Message}");
+            }
+        }
+
+        private void Login_Click(object sender, RoutedEventArgs e)
+        {
+            // Tìm MainWindow và hiển thị màn hình đăng nhập
+            Window mainWindow = Window.GetWindow(this);
+            if (mainWindow is MainWindow mw)
+            {
+                mw.MainContent.Content = new LoginView();
             }
         }
     }

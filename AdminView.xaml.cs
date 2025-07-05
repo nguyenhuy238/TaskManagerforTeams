@@ -124,5 +124,17 @@ namespace TaskManager
                 MessageBox.Show("Payroll approved successfully!");
             }
         }
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            // Xóa thông tin người dùng hiện tại
+            CurrentUser.Instance.Clear();
+
+            // Tìm MainWindow và gọi phương thức hiển thị màn hình đăng nhập
+            Window mainWindow = Window.GetWindow(this);
+            if (mainWindow is MainWindow mw)
+            {
+                mw.ShowLoginForm();
+            }
+        }
     }
 }

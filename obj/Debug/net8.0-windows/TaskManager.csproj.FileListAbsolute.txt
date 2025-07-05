@@ -297,3 +297,9 @@ E:\PRN_Assigment\Task-Manager-for-Teams\obj\Debug\net8.0-windows\AdminView.g.cs
 E:\PRN_Assigment\Task-Manager-for-Teams\obj\Debug\net8.0-windows\GuestView.g.cs
 E:\PRN_Assigment\Task-Manager-for-Teams\obj\Debug\net8.0-windows\ProjectManagerView.g.cs
 E:\PRN_Assigment\Task-Manager-for-Teams\obj\Debug\net8.0-windows\TeamMemberView.g.cs
+E:\PRN_Assigment\Task-Manager-for-Teams\obj\Debug\net8.0-windows\LoginView.baml
+E:\PRN_Assigment\Task-Manager-for-Teams\obj\Debug\net8.0-windows\LoginView.g.cs
+E:\PRN_Assigment\Task-Manager-for-Teams\obj\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
+E:\PRN_Assigment\Task-Manager-for-Teams\obj\Debug\net8.0-windows\TaskManager_MarkupCompile.lref
+E:\PRN_Assigment\Task-Manager-for-Teams\obj\Debug\net8.0-windows\CreateProjectWindow.baml
+E:\PRN_Assigment\Task-Manager-for-Teams\obj\Debug\net8.0-windows\CreateProjectWindow.g.cs

@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 E:\PRN_Assigment\Task-Manager-for-Teams\App.xaml
-51658695054
+71139163476
 
-21762656761
+24-1219701130
 248181340984
-AdminView.xaml;GuestView.xaml;MainWindow.xaml;ProjectManagerView.xaml;TeamMemberView.xaml;
+AdminView.xaml;CreateProjectWindow.xaml;GuestView.xaml;LoginView.xaml;MainWindow.xaml;ProjectManagerView.xaml;TeamMemberView.xaml;
 
 False
 
