@@ -1,0 +1,30 @@
+﻿<Window x:Class="TaskManager.UpdateStatusDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="Update Task Status"
+        Height="200"
+        Width="400"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="New Status:" FontWeight="Bold" Margin="0,0,0,5"/>
+        <TextBlock x:Name="StatusTextBlock" Grid.Row="1" Margin="0,0,0,10"/>
+
+        <TextBlock Text="Comment (Required):" FontWeight="Bold" Margin="0,0,0,5" Grid.Row="2"/>
+        <TextBox x:Name="CommentTextBox" AcceptsReturn="True" Height="60" Margin="0,0,0,10" Grid.Row="3"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="2" Margin="0,10,0,-98">
+            <Button x:Name="btnCancel" Content="Cancel" Width="60" Click="BtnCancel_Click"
+                    materialDesign:ButtonAssist.CornerRadius="5" Height="26"/>
+            <Button x:Name="btnSave" Content="Save" Width="52" Click="BtnSave_Click"
+                    materialDesign:ButtonAssist.CornerRadius="5" Height="26"/>
+        </StackPanel>
+    </Grid>
+</Window>

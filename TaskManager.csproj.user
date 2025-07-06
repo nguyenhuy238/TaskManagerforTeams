@@ -5,7 +5,19 @@
     <Compile Update="CreateProjectWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="CreateTaskWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="LoginView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="TaskDetailsWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="TaskViewWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UpdateStatusDialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

@@ -27,52 +27,99 @@ namespace TaskManager
         {
             InitializeComponent();
             _context = new TaskManagerDb1Context();
-            LoadTasks();
+            LoadProjects();
             LoadProgressReport();
         }
 
-        private void LoadTasks()
+        private void LoadProjects()
         {
-            // Lấy ID của người dùng hiện tại
             int currentUserId = GetCurrentUserId();
-
-            // Lấy danh sách ProjectId mà người dùng có vai trò ProjectManager
-            var managedProjectIds = _context.ProjectUserRoles
+            var projects = _context.ProjectUserRoles
                 .Where(pur => pur.UserId == currentUserId && pur.Role == "ProjectManager")
-                .Select(pur => pur.ProjectId)
+                .Join(_context.Projects,
+                    pur => pur.ProjectId,
+                    p => p.ProjectId,
+                    (pur, p) => new
+                    {
+                        p.ProjectId,
+                        p.Name,
+                        p.Description,
+                        p.StartDate,
+                        EndDate = p.EndDate ?? null,
+                        Progress = _context.Tasks
+                            .Where(t => t.ProjectId == p.ProjectId)
+                            .Count() > 0
+                            ? (double)_context.Tasks
+                                .Count(t => t.ProjectId == p.ProjectId && t.Status == "Done")
+                                / _context.Tasks.Count(t => t.ProjectId == p.ProjectId) * 100
+                            : 0
+                    })
                 .ToList();
 
-            // Lấy các nhiệm vụ thuộc các dự án mà người dùng quản lý
-            var tasks = _context.Tasks
-                .Where(t => managedProjectIds.Contains(t.ProjectId))
-                .Select(t => new
+            ProjectsDataGrid.ItemsSource = projects;
+        }
+
+        private void ViewTasks_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var project = button?.DataContext as dynamic;
+            if (project != null)
+            {
+                var taskViewWindow = new TaskViewWindow(project.ProjectId);
+                taskViewWindow.Owner = Window.GetWindow(this);
+                taskViewWindow.TasksUpdated += () =>
                 {
-                    t.TaskId,
-                    t.Title,
-                    t.Status,
-                    AssignedToName = _context.Users
-                        .Where(u => u.UserId == t.AssignedTo)
-                        .Select(u => u.FullName)
-                        .FirstOrDefault() ?? "Unassigned",
-                    t.DueDate
-                })
-                .ToList();
+                    LoadProjects(); // Làm mới danh sách dự án và tiến độ
+                    LoadProgressReport(); // Làm mới báo cáo tổng quát
+                };
+                taskViewWindow.ShowDialog();
+            }
+        }
 
-            TasksDataGrid.ItemsSource = tasks; // Gán dữ liệu vào DataGrid
+        private void EditProject_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var project = button?.DataContext as dynamic;
+            if (project != null)
+            {
+                // Mở cửa sổ chỉnh sửa dự án
+                var editProjectWindow = new CreateProjectWindow(project.ProjectId);
+                editProjectWindow.Owner = Window.GetWindow(this);
+                editProjectWindow.ProjectCreated += (name, description, startDate, endDate) =>
+                {
+                    try
+                    {
+                        var dbProject = _context.Projects.Find(project.ProjectId);
+                        if (dbProject != null)
+                        {
+                            dbProject.Name = name;
+                            dbProject.Description = description;
+                            dbProject.StartDate = DateOnly.FromDateTime(startDate);
+                            // Fix for CS0173: Explicitly cast null to DateOnly? to resolve type ambiguity in the conditional expression.
+                            dbProject.EndDate = endDate.HasValue ? DateOnly.FromDateTime(endDate.Value) : (DateOnly?)null;
+                            
+                            _context.SaveChanges();
+                            LoadProjects();
+                            MessageBox.Show("Project updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error updating project: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                };
+                editProjectWindow.ShowDialog();
+            }
         }
 
         private void LoadProgressReport()
         {
-            // Lấy ID của người dùng hiện tại
             int currentUserId = GetCurrentUserId();
-
-            // Lấy danh sách ProjectId mà người dùng có vai trò ProjectManager
             var managedProjectIds = _context.ProjectUserRoles
                 .Where(pur => pur.UserId == currentUserId && pur.Role == "ProjectManager")
                 .Select(pur => pur.ProjectId)
                 .ToList();
 
-            // Tính tiến độ dựa trên các nhiệm vụ thuộc dự án của người dùng
             var totalTasks = _context.Tasks
                 .Where(t => managedProjectIds.Contains(t.ProjectId))
                 .Count();
@@ -83,51 +130,9 @@ namespace TaskManager
             ProgressReportText.Text = $"{progress:F2}% completed ({completedTasks}/{totalTasks} tasks)";
         }
 
-        private void AssignTask_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            var task = button?.DataContext as dynamic;
-            if (task != null)
-            {
-                var userId = GetUserIdFromSelection(); // Logic để chọn người nhận nhiệm vụ (cần triển khai thêm)
-                if (userId.HasValue)
-                {
-                    var dbTask = _context.Tasks.Find(task.TaskId);
-                    if (dbTask != null)
-                    {
-                        dbTask.AssignedTo = userId.Value;
-                        _context.SaveChanges();
-                        LoadTasks();
-                        MessageBox.Show("Task assigned successfully!");
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Please select a user to assign the task.");
-                }
-            }
-        }
 
-        private void UpdateStatus_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            var task = button?.DataContext as dynamic;
-            if (task != null)
-            {
-                var newStatus = ShowStatusSelectionDialog(); // Hiển thị dialog để chọn trạng thái mới
-                if (!string.IsNullOrEmpty(newStatus))
-                {
-                    var dbTask = _context.Tasks.Find(task.TaskId);
-                    if (dbTask != null)
-                    {
-                        dbTask.Status = newStatus;
-                        _context.SaveChanges();
-                        LoadTasks();
-                        MessageBox.Show("Task status updated successfully!");
-                    }
-                }
-            }
-        }
+
+
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
@@ -216,12 +221,12 @@ namespace TaskManager
         int GetCurrentUserId()
         {
             var currentUser = CurrentUser.Instance.Current;
-            
-                return currentUser.UserId;
-            
-            
+
+            return currentUser.UserId;
+
+
         }
 
-      
+
     }
 }

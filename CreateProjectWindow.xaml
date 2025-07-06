@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Create New Project"
+        Title="{Binding WindowTitle}"
         Height="348"
         Width="465"
         WindowStartupLocation="CenterOwner"
@@ -25,25 +25,25 @@
 
         <!-- Project Name -->
         <TextBlock Text="Project Name:" Margin="0,0,0,5" Grid.Row="0"/>
-        <TextBox x:Name="txtName" Margin="0,0,0,10" Grid.Row="1"/>
+        <TextBox x:Name="txtName" Margin="0,0,0,10" Grid.Row="1" Text="{Binding ProjectName}"/>
 
         <!-- Description -->
         <TextBlock Text="Description:" Margin="0,0,0,5" Grid.Row="2"/>
-        <TextBox x:Name="txtDescription" AcceptsReturn="True" Height="60" Margin="0,0,0,10" Grid.Row="3"/>
+        <TextBox x:Name="txtDescription" AcceptsReturn="True" Height="60" Margin="0,0,0,10" Grid.Row="3" Text="{Binding ProjectDescription}"/>
 
         <!-- Start Date -->
         <TextBlock Text="Start Date:" Margin="0,0,0,5" Grid.Row="4"/>
-        <DatePicker x:Name="dpStartDate" Margin="0,0,0,10" Grid.Row="5"/>
+        <DatePicker x:Name="dpStartDate" Margin="0,0,0,10" Grid.Row="5" SelectedDate="{Binding StartDate}"/>
 
         <!-- End Date -->
         <TextBlock Text="End Date (Optional):" Margin="0,0,0,5" Grid.Row="6"/>
-        <DatePicker x:Name="dpEndDate" Margin="0,0,0,10" Grid.Row="7"/>
+        <DatePicker x:Name="dpEndDate" Margin="0,0,0,10" Grid.Row="7" SelectedDate="{Binding EndDate}"/>
 
         <!-- Buttons -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="8" Margin="0,10,0,0">
             <Button x:Name="btnCancel" Content="Cancel" Width="100" Margin="0,0,10,0" Click="BtnCancel_Click"
                     materialDesign:ButtonAssist.CornerRadius="5"/>
-            <Button x:Name="btnCreate" Content="Create" Width="100" Click="BtnCreate_Click"
+            <Button x:Name="btnSave" Content="{Binding SaveButtonText}" Width="100" Click="BtnSave_Click"
                     materialDesign:ButtonAssist.CornerRadius="5"/>
         </StackPanel>
     </Grid>

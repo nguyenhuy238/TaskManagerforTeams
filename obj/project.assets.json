@@ -4692,11 +4692,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\PRN_Assigment\\Task-Manager-for-Teams\\TaskManager.csproj",
+      "projectUniqueName": "E:\\Project_Manager\\Task-Manager-for-Teams\\TaskManager.csproj",
       "projectName": "TaskManager",
-      "projectPath": "E:\\PRN_Assigment\\Task-Manager-for-Teams\\TaskManager.csproj",
+      "projectPath": "E:\\Project_Manager\\Task-Manager-for-Teams\\TaskManager.csproj",
       "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
-      "outputPath": "E:\\PRN_Assigment\\Task-Manager-for-Teams\\obj\\",
+      "outputPath": "E:\\Project_Manager\\Task-Manager-for-Teams\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

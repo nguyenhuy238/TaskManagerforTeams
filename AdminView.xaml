@@ -14,12 +14,22 @@
         </Grid.RowDefinitions>
 
         <!-- Tiêu đề -->
-        <TextBlock Text="Admin Dashboard"
-                   FontSize="24"
-                   FontWeight="Bold"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   Margin="0,10"/>
+        <Grid Grid.Row="0">
+            <TextBlock Text="Admin Dashboard"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="0,10"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,0">
+                <Button x:Name="btnLogout"
+                        Content="Logout"
+                        Width="100"
+                        Height="30"
+                        materialDesign:ButtonAssist.CornerRadius="5"
+                        Click="Logout_Click"/>
+            </StackPanel>
+        </Grid>
 
         <!-- Khu vực quản lý người dùng và dự án -->
         <TabControl Grid.Row="1" Margin="10">
@@ -55,16 +65,36 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Project Overview">
-                <DataGrid x:Name="ProjectsDataGrid"
-                          AutoGenerateColumns="False"
-                          Margin="10">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Project ID" Binding="{Binding ProjectId}" />
-                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
-                        <DataGridTextColumn Header="Start Date" Binding="{Binding StartDate}" />
-                        <DataGridTextColumn Header="End Date" Binding="{Binding EndDate}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="58*"/>
+                        <ColumnDefinition Width="87*"/>
+                        <ColumnDefinition Width="629*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Button x:Name="btnCreateProject"
+                            Content="Create Project"
+                            Width="120"
+                            Height="30"
+                            materialDesign:ButtonAssist.CornerRadius="5"
+                            Click="CreateProject_Click"
+                            Margin="10,0,0,10"
+                            HorizontalAlignment="Left" Grid.ColumnSpan="2"/>
+                    <DataGrid x:Name="ProjectsDataGrid"
+                              Grid.Row="1"
+                              AutoGenerateColumns="False"
+                              Margin="10,10,10,10" Grid.ColumnSpan="3">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Project ID" Binding="{Binding ProjectId}" />
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                            <DataGridTextColumn Header="Start Date" Binding="{Binding StartDate}" />
+                            <DataGridTextColumn Header="End Date" Binding="{Binding EndDate}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </TabItem>
         </TabControl>
 

@@ -117,12 +117,82 @@ namespace TaskManager
             if (payroll != null)
             {
                 payroll.Approved = true;
-                payroll.ApprovedBy = 1; // Giả lập Admin ID
+                payroll.ApprovedBy = GetCurrentUserId(); // Giả lập Admin ID
                 payroll.ApprovedAt = DateTime.Now;
                 _context.SaveChanges();
                 LoadPayroll();
                 MessageBox.Show("Payroll approved successfully!");
             }
+        }
+        private void CreateProject_Click(object sender, RoutedEventArgs e)
+        {
+            var createProjectWindow = new CreateProjectWindow();
+            createProjectWindow.Owner = Window.GetWindow(this);
+            createProjectWindow.ProjectCreated += (name, description, startDate, endDate) =>
+            {
+                try
+                {
+                    using (var transaction = _context.Database.BeginTransaction())
+                    {
+                        // Tạo dự án mới
+                        var newProject = new Project
+                        {
+                            Name = name,
+                            Description = description,
+                            StartDate = DateOnly.FromDateTime(startDate),
+                            EndDate = endDate.HasValue ? DateOnly.FromDateTime(endDate.Value) : null,
+                            CreatedBy = GetCurrentUserId(),
+                            CreatedAt = DateTime.Now
+                        };
+
+                        _context.Projects.Add(newProject);
+                        _context.SaveChanges();
+
+                        // Gán vai trò ProjectManager cho Admin
+                        var projectUserRole = new ProjectUserRole
+                        {
+                            ProjectId = newProject.ProjectId,
+                            UserId = GetCurrentUserId(),
+                            Role = "ProjectManager",
+                            AssignedAt = DateTime.Now
+                        };
+                        _context.ProjectUserRoles.Add(projectUserRole);
+
+                        // Ghi log hành động
+                        var log = new ActivityLog
+                        {
+                            UserId = GetCurrentUserId(),
+                            TaskId = null,
+                            Action = "Create Project",
+                            Description = $"Created project {newProject.Name}",
+                            CreatedAt = DateTime.Now
+                        };
+                        _context.ActivityLogs.Add(log);
+
+                        // Gửi thông báo cho Admin
+                        var notification = new Notification
+                        {
+                            UserId = GetCurrentUserId(),
+                            TaskId = null,
+                            Message = $"You have created project {newProject.Name} and been assigned as ProjectManager.",
+                            IsRead = false,
+                            CreatedAt = DateTime.Now
+                        };
+                        _context.Notifications.Add(notification);
+
+                        _context.SaveChanges();
+                        transaction.Commit();
+
+                        LoadProjects();
+                        MessageBox.Show("Project created and role assigned successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error creating project or assigning role: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            };
+            createProjectWindow.ShowDialog();
         }
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
@@ -135,6 +205,15 @@ namespace TaskManager
             {
                 mw.ShowLoginForm();
             }
+        }
+
+        int GetCurrentUserId()
+        {
+            var currentUser = CurrentUser.Instance.Current;
+
+            return currentUser.UserId;
+
+
         }
     }
 }

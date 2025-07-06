@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "3GPgv3NLP0w=",
+  "dgSpecHash": "EcZNnv+3NCo=",
   "success": true,
-  "projectFilePath": "E:\\PRN_Assigment\\Task-Manager-for-Teams\\TaskManager.csproj",
+  "projectFilePath": "E:\\Project_Manager\\Task-Manager-for-Teams\\TaskManager.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\DELL\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
     "C:\\Users\\DELL\\.nuget\\packages\\azure.identity\\1.10.3\\azure.identity.1.10.3.nupkg.sha512",
