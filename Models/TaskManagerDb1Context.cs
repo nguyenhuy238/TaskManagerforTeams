@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 
 namespace TaskManager.Models;
 
@@ -36,13 +37,26 @@ public partial class TaskManagerDb1Context : DbContext
     public virtual DbSet<TaskComment> TaskComments { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+    
+    public virtual DbSet<Payroll> Payroll { get; set; }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=localhost;Database=TaskManagerDB1;UId=sa;pwd=123;TrustServerCertificate=True");
+    {
+        var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseSqlServer(config.GetConnectionString("DB"));
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
+        modelBuilder.Entity<User>()
+                .Property(u => u.Skills)
+                .HasMaxLength(255)
+                .IsRequired(false);
         modelBuilder.Entity<ActivityLog>(entity =>
         {
             entity.HasKey(e => e.LogId).HasName("PK__Activity__5E54864823C50553");
@@ -244,6 +258,7 @@ public partial class TaskManagerDb1Context : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__ProjectUs__UserI__44FF419A");
+
         });
 
         modelBuilder.Entity<Task>(entity =>

@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Tiêu đề, nút Create Project và Logout -->
+        <!-- Tiêu đề, nút Create Project, View Notifications và Logout -->
         <Grid Grid.Row="0">
             <TextBlock Text="Project Manager Dashboard"
                        FontSize="24"
@@ -28,6 +28,13 @@
                         Height="30"
                         materialDesign:ButtonAssist.CornerRadius="5"
                         Click="CreateProject_Click"
+                        Margin="0,0,10,0"/>
+                <Button x:Name="btnViewNotifications"
+                        Content="View Notifications"
+                        Width="140"
+                        Height="30"
+                        materialDesign:ButtonAssist.CornerRadius="5"
+                        Click="ViewNotifications_Click"
                         Margin="0,0,10,0"/>
                 <Button x:Name="btnLogout"
                         Content="Logout"
@@ -63,6 +70,14 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Button Content="Edit Project" Click="EditProject_Click" 
+                                    materialDesign:ButtonAssist.CornerRadius="5"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Assign Team Member" Click="AssignTeamMember_Click" 
                                     materialDesign:ButtonAssist.CornerRadius="5"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

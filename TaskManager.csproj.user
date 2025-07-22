@@ -2,6 +2,9 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
   <ItemGroup>
+    <Compile Update="AssignTeamMemberWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="CreateProjectWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -9,6 +12,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="LoginView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="NotificationsWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="RequestStatusWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="ReviewStatusRequestWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="TaskDetailsWindow.xaml.cs">

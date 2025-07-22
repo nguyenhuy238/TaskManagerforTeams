@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,7 +23,8 @@ namespace TaskManager
     {
         private readonly TaskManagerDb1Context _context;
         private readonly int _projectId;
-        public event Action TasksUpdated; // Thêm sự kiện TasksUpdated
+        public event Action TasksUpdated;
+
         public TaskViewWindow(int projectId)
         {
             InitializeComponent();
@@ -38,12 +40,26 @@ namespace TaskManager
             if (project != null)
             {
                 ProjectTitle.Text = $"Tasks for Project: {project.Name}";
+                var tasks = _context.Tasks.Where(t => t.ProjectId == _projectId).ToList();
+                var totalTasks = tasks.Count;
+                var completedTasks = tasks.Count(t => t.Status == "Done");
+                var onTimeTasks = tasks.Count(t => t.Status == "Done" && t.CompletedAt.HasValue && t.DueDate.HasValue &&
+                    t.CompletedAt.Value <= t.DueDate.Value.ToDateTime(TimeOnly.MaxValue));
+                var lateTasks = tasks.Count(t => t.Status == "Done" && t.CompletedAt.HasValue && t.DueDate.HasValue &&
+                    t.CompletedAt.Value > t.DueDate.Value.ToDateTime(TimeOnly.MaxValue));
+
+                var progress = totalTasks > 0 ? (double)completedTasks / totalTasks * 100 : 0;
+                var onTimeRate = totalTasks > 0 ? (double)onTimeTasks / completedTasks * 100 : 0;
+                ProgressText.Text = $"{progress:F2}% ({completedTasks}/{totalTasks} tasks)";
+                OnTimeRateText.Text = $"{onTimeRate:F2}%";
+                LateTasksText.Text = lateTasks.ToString();
             }
         }
 
         private void LoadTasks()
         {
             var tasks = _context.Tasks
+                .AsNoTracking()
                 .Where(t => t.ProjectId == _projectId)
                 .Select(t => new
                 {
@@ -54,7 +70,10 @@ namespace TaskManager
                         .Where(u => u.UserId == t.AssignedTo)
                         .Select(u => u.FullName)
                         .FirstOrDefault() ?? "Unassigned",
-                    t.DueDate
+                    t.DueDate,
+                    OnTimeStatus = t.Status == "Done" && t.CompletedAt.HasValue && t.DueDate.HasValue
+                        ? (t.CompletedAt.Value <= t.DueDate.Value.ToDateTime(TimeOnly.MaxValue) ? "On-Time" : "Late")
+                        : (t.DueDate.HasValue ? "Pending" : "N/A")
                 })
                 .ToList();
 
@@ -73,11 +92,50 @@ namespace TaskManager
                     var dbTask = _context.Tasks.Find(task.TaskId);
                     if (dbTask != null)
                     {
-                        dbTask.AssignedTo = userId.Value;
-                        _context.SaveChanges();
-                        LoadTasks();
-                        TasksUpdated?.Invoke(); // Kích hoạt sự kiện
-                        MessageBox.Show("Task assigned successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        int currentUserId = GetCurrentUserId();
+                        var isProjectManager = _context.ProjectUserRoles
+                            .Any(pur => pur.ProjectId == _projectId && pur.UserId == currentUserId && pur.Role == "ProjectManager");
+                        if (!isProjectManager)
+                        {
+                            MessageBox.Show("You do not have permission to assign tasks.", "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+
+                        using (var transaction = _context.Database.BeginTransaction())
+                        {
+                            dbTask.AssignedTo = userId.Value;
+                            var log = new ActivityLog
+                            {
+                                UserId = currentUserId,
+                                TaskId = dbTask.TaskId,
+                                Action = "AssignTask",
+                                Description = $"Task '{dbTask.Title}' assigned to user {userId.Value}",
+                                CreatedAt = DateTime.Now
+                            };
+                            _context.ActivityLogs.Add(log);
+
+                            var notification = new Notification
+                            {
+                                UserId = userId.Value,
+                                TaskId = dbTask.TaskId,
+                                Message = $"You have been assigned to task '{dbTask.Title}' in project '{_context.Projects.Find(_projectId)?.Name ?? "Unknown"}'",
+                                IsRead = false,
+                                CreatedAt = DateTime.Now
+                            };
+                            _context.Notifications.Add(notification);
+
+                            _context.SaveChanges();
+                            transaction.Commit();
+
+                            LoadTasks();
+                            LoadProjectInfo();
+                            TasksUpdated?.Invoke();
+                            MessageBox.Show("Task assigned successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Task not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else
@@ -93,16 +151,95 @@ namespace TaskManager
             var task = button?.DataContext as dynamic;
             if (task != null)
             {
+                int currentUserId = GetCurrentUserId();
+                var isProjectManager = _context.ProjectUserRoles
+                    .Any(pur => pur.ProjectId == _projectId && pur.UserId == currentUserId && pur.Role == "ProjectManager");
+                if (!isProjectManager)
+                {
+                    MessageBox.Show("You do not have permission to update task status.", "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
                 var newStatus = ShowStatusSelectionDialog();
                 if (!string.IsNullOrEmpty(newStatus))
                 {
-                    var dbTask = _context.Tasks.Find(task.TaskId);
-                    if (dbTask != null)
+                    using (var transaction = _context.Database.BeginTransaction()) // Declare 'transaction' here
                     {
-                        dbTask.Status = newStatus;
-                        _context.SaveChanges();
-                        LoadTasks();
-                        MessageBox.Show("Task status updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        try
+                        {
+                            var dbTask = _context.Tasks.Find(task.TaskId);
+                            if (dbTask == null)
+                            {
+                                MessageBox.Show("Task not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                return;
+                            }
+
+                            var confirm = MessageBox.Show(
+                                $"Are you sure you want to change the status of '{dbTask.Title}' to {newStatus}?",
+                                "Confirm",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Question
+                            );
+                            if (confirm != MessageBoxResult.Yes)
+                                return;
+
+                            if (!new[] { "ToDo", "InProgress", "Done" }.Contains(newStatus))
+                            {
+                                MessageBox.Show("Invalid status selected.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                return;
+                            }
+
+                            dbTask.Status = newStatus;
+                            dbTask.CompletedAt = newStatus == "Done" ? (DateTime?)DateTime.Now : null;
+
+                            var log = new ActivityLog
+                            {
+                                UserId = currentUserId,
+                                TaskId = dbTask.TaskId,
+                                Action = "UpdateTaskStatus",
+                                Description = $"Task '{dbTask.Title}' status changed to {newStatus}",
+                                CreatedAt = DateTime.Now
+                            };
+                            _context.ActivityLogs.Add(log);
+
+                            if (dbTask.AssignedTo.HasValue)
+                            {
+                                var project = _context.Projects.Find(_projectId);
+                                if (project == null)
+                                {
+                                    MessageBox.Show("Project not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                    return;
+                                }
+
+                                var notification = new Notification
+                                {
+                                    UserId = dbTask.AssignedTo.Value,
+                                    TaskId = dbTask.TaskId,
+                                    Message = $"Task '{dbTask.Title}' status updated to {newStatus} in project '{project.Name}'",
+                                    IsRead = false,
+                                    CreatedAt = DateTime.Now
+                                };
+                                _context.Notifications.Add(notification);
+                            }
+
+                            _context.SaveChanges();
+                            transaction.Commit();
+
+                            LoadTasks();
+                            LoadProjectInfo();
+                            TasksUpdated?.Invoke();
+                            MessageBox.Show("Task status updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        catch (DbUpdateException ex)
+                        {
+                            transaction.Rollback(); // 'transaction' is now in scope
+                            MessageBox.Show($"Database error: {ex.InnerException?.Message ?? ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback(); // 'transaction' is now in scope
+                            MessageBox.Show($"Error updating task status: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
                     }
                 }
             }
@@ -114,20 +251,26 @@ namespace TaskManager
             createTaskWindow.Owner = this;
             createTaskWindow.TaskCreated += () =>
             {
-                LoadTasks(); // Làm mới danh sách Task sau khi tạo
+                LoadTasks();
+                LoadProjectInfo();
                 MessageBox.Show("Task created successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             };
             createTaskWindow.ShowDialog();
         }
+
         private int? GetUserIdFromSelection()
         {
-            // Fetch the list of TeamMembers for the project
             var teamMembers = _context.ProjectUserRoles
                 .Where(pur => pur.ProjectId == _projectId && pur.Role == "TeamMember")
                 .Join(_context.Users,
                     pur => pur.UserId,
                     u => u.UserId,
-                    (pur, u) => new { u.UserId, u.FullName })
+                    (pur, u) => new
+                    {
+                        u.UserId,
+                        u.FullName,
+                        u.Skills
+                    })
                 .ToList();
 
             if (!teamMembers.Any())
@@ -136,11 +279,11 @@ namespace TaskManager
                 return null;
             }
 
-            // Fetch performance metrics and task counts
             var teamMembersWithMetrics = teamMembers.Select(tm => new
             {
                 tm.UserId,
                 tm.FullName,
+                tm.Skills,
                 TaskCount = _context.Tasks.Count(t => t.AssignedTo == tm.UserId && t.Status == "InProgress"),
                 OnTimeRate = _context.PerformanceMetrics
                     .Where(pm => pm.UserId == tm.UserId)
@@ -153,17 +296,16 @@ namespace TaskManager
                     .Select(pm => pm.QualityScore)
                     .FirstOrDefault()
             })
-            .OrderByDescending(tm => tm.OnTimeRate) // Prioritize high OnTimeRate
-            .ThenByDescending(tm => tm.QualityScore) // Then QualityScore
-            .ThenBy(tm => tm.TaskCount) // Finally, fewer InProgress tasks
+            .OrderByDescending(tm => tm.OnTimeRate)
+            .ThenByDescending(tm => tm.QualityScore)
+            .ThenBy(tm => tm.TaskCount)
             .ToList();
 
-            // Create dialog to select TeamMember
             var dialog = new Window
             {
                 Title = "Select Team Member",
                 Width = 400,
-                Height = 200,
+                Height = 250,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = this
             };
@@ -173,7 +315,6 @@ namespace TaskManager
                 Margin = new Thickness(10),
                 DisplayMemberPath = "FullName"
             };
-            // Display additional information when selecting
             var infoTextBlock = new TextBlock
             {
                 Margin = new Thickness(10, 5, 10, 5),
@@ -184,8 +325,9 @@ namespace TaskManager
                 var selected = comboBox.SelectedItem;
                 if (selected != null)
                 {
-                    var selectedMember = (dynamic)selected; // Explicit cast to dynamic
-                    infoTextBlock.Text = $"Tasks In Progress: {selectedMember.TaskCount}\n" +
+                    var selectedMember = (dynamic)selected;
+                    infoTextBlock.Text = $"Skills: {selectedMember.Skills ?? "None"}\n" +
+                                         $"Tasks In Progress: {selectedMember.TaskCount}\n" +
                                          $"On-Time Rate: {selectedMember.OnTimeRate:F2}%\n" +
                                          $"Quality Score: {selectedMember.QualityScore:F2}";
                 }
@@ -201,7 +343,7 @@ namespace TaskManager
             {
                 if (comboBox.SelectedItem != null)
                 {
-                    dialog.Tag = ((dynamic)comboBox.SelectedItem).UserId; // Explicit cast to dynamic
+                    dialog.Tag = ((dynamic)comboBox.SelectedItem).UserId;
                     dialog.Close();
                 }
                 else
@@ -216,11 +358,10 @@ namespace TaskManager
             dialog.Content = stackPanel;
             dialog.ShowDialog();
             return dialog.Tag as int?;
-        }   
+        }
 
         private string ShowStatusSelectionDialog()
         {
-            // Placeholder: Cần triển khai giao diện để chọn trạng thái
             var statuses = new[] { "ToDo", "InProgress", "Done" };
             var dialog = new Window
             {
@@ -260,6 +401,12 @@ namespace TaskManager
             dialog.Content = stackPanel;
             dialog.ShowDialog();
             return dialog.Tag as string;
+        }
+
+        private int GetCurrentUserId()
+        {
+            var currentUser = CurrentUser.Instance.Current;
+            return currentUser.UserId;
         }
     }
 }

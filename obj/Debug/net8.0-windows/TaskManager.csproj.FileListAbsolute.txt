@@ -470,3 +470,12 @@ E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\TaskDetailsWi
 E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\TaskDetailsWindow.g.cs
 E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\UpdateStatusDialog.baml
 E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\UpdateStatusDialog.g.cs
+E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\AssignTeamMemberWindow.baml
+E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\AssignTeamMemberWindow.g.cs
+E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\NotificationsWindow.baml
+E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\NotificationsWindow.g.cs
+E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\RequestStatusWindow.baml
+E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\RequestStatusWindow.g.cs
+E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\ReviewStatusRequestWindow.baml
+E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\ReviewStatusRequestWindow.g.cs
+E:\Project_Manager\Task-Manager-for-Teams\obj\Debug\net8.0-windows\App.baml

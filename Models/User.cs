@@ -19,6 +19,7 @@ public partial class User
 
     public decimal BaseSalary { get; set; }
 
+    public string Skills { get; set; } // Thêm trường Skills
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? LastLogin { get; set; }

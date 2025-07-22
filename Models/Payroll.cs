@@ -34,4 +34,5 @@ public partial class Payroll
     public virtual ICollection<PayrollHistory> PayrollHistories { get; set; } = new List<PayrollHistory>();
 
     public virtual User User { get; set; } = null!;
+
 }

@@ -69,8 +69,8 @@ namespace TaskManager
                 taskViewWindow.Owner = Window.GetWindow(this);
                 taskViewWindow.TasksUpdated += () =>
                 {
-                    LoadProjects(); // Làm mới danh sách dự án và tiến độ
-                    LoadProgressReport(); // Làm mới báo cáo tổng quát
+                    LoadProjects();
+                    LoadProgressReport();
                 };
                 taskViewWindow.ShowDialog();
             }
@@ -82,7 +82,6 @@ namespace TaskManager
             var project = button?.DataContext as dynamic;
             if (project != null)
             {
-                // Mở cửa sổ chỉnh sửa dự án
                 var editProjectWindow = new CreateProjectWindow(project.ProjectId);
                 editProjectWindow.Owner = Window.GetWindow(this);
                 editProjectWindow.ProjectCreated += (name, description, startDate, endDate) =>
@@ -95,9 +94,7 @@ namespace TaskManager
                             dbProject.Name = name;
                             dbProject.Description = description;
                             dbProject.StartDate = DateOnly.FromDateTime(startDate);
-                            // Fix for CS0173: Explicitly cast null to DateOnly? to resolve type ambiguity in the conditional expression.
                             dbProject.EndDate = endDate.HasValue ? DateOnly.FromDateTime(endDate.Value) : (DateOnly?)null;
-                            
                             _context.SaveChanges();
                             LoadProjects();
                             MessageBox.Show("Project updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -110,6 +107,76 @@ namespace TaskManager
                 };
                 editProjectWindow.ShowDialog();
             }
+        }
+
+        private void AssignTeamMember_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var project = button?.DataContext as dynamic;
+            if (project != null)
+            {
+                var assignTeamMemberWindow = new AssignTeamMemberWindow(project.ProjectId);
+                assignTeamMemberWindow.Owner = Window.GetWindow(this);
+                assignTeamMemberWindow.UserAssigned += () =>
+                {
+                    LoadProjects();
+                };
+                assignTeamMemberWindow.ShowDialog();
+            }
+        }
+
+        private void ViewNotifications_Click(object sender, RoutedEventArgs e)
+        {
+            var notificationsWindow = new NotificationsWindow();
+            notificationsWindow.Owner = Window.GetWindow(this);
+            notificationsWindow.ShowDialog();
+        }   
+
+        private void CreateProject_Click(object sender, RoutedEventArgs e)
+        {
+            var createProjectWindow = new CreateProjectWindow();
+            createProjectWindow.Owner = Window.GetWindow(this);
+            createProjectWindow.ProjectCreated += (name, description, startDate, endDate) =>
+            {
+                try
+                {
+                    using (var transaction = _context.Database.BeginTransaction())
+                    {
+                        var newProject = new Project
+                        {
+                            Name = name,
+                            Description = description,
+                            StartDate = DateOnly.FromDateTime(startDate),
+                            EndDate = endDate.HasValue ? DateOnly.FromDateTime(endDate.Value) : null,
+                            CreatedBy = GetCurrentUserId(),
+                            CreatedAt = DateTime.Now
+                        };
+
+                        _context.Projects.Add(newProject);
+                        _context.SaveChanges();
+
+                        var projectUserRole = new ProjectUserRole
+                        {
+                            ProjectId = newProject.ProjectId,
+                            UserId = GetCurrentUserId(),
+                            Role = "ProjectManager",
+                            AssignedAt = DateTime.Now
+                        };
+
+                        _context.ProjectUserRoles.Add(projectUserRole);
+                        _context.SaveChanges();
+
+                        transaction.Commit();
+                        LoadProjects();
+                        MessageBox.Show("Project created and role assigned successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error creating project or assigning role: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            };
+            createProjectWindow.ShowDialog();
         }
 
         private void LoadProgressReport()
@@ -130,10 +197,6 @@ namespace TaskManager
             ProgressReportText.Text = $"{progress:F2}% completed ({completedTasks}/{totalTasks} tasks)";
         }
 
-
-
-
-
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
@@ -148,85 +211,10 @@ namespace TaskManager
             }
         }
 
-        private int? GetUserIdFromSelection()
-        {
-            // Placeholder: Thay bằng logic thực tế (ví dụ: ComboBox để chọn người dùng)
-            // Ví dụ: Lấy từ danh sách người dùng trong cơ sở dữ liệu
-            var users = _context.Users.ToList();
-            // Cần thêm giao diện UI (ComboBox) để chọn người dùng
-            return users.Any() ? users.First().UserId : (int?)null; // Trả về UserId đầu tiên nếu có
-        }
-
-        private string ShowStatusSelectionDialog()
-        {
-            // Placeholder: Hiển thị dialog để chọn trạng thái (ToDo, InProgress, Done)
-            var statuses = new[] { "ToDo", "InProgress", "Done" };
-            // Cần thêm giao diện UI (ComboBox hoặc dialog) để chọn trạng thái
-            return statuses[0]; // Giả lập trả về "ToDo"
-        }
-
-        private void CreateProject_Click(object sender, RoutedEventArgs e)
-        {
-            // Mở CreateProjectWindow
-            var createProjectWindow = new CreateProjectWindow();
-            createProjectWindow.Owner = Window.GetWindow(this);
-            createProjectWindow.ProjectCreated += (name, description, startDate, endDate) =>
-            {
-                try
-                {
-                    // Bắt đầu transaction để đảm bảo toàn vẹn dữ liệu
-                    using (var transaction = _context.Database.BeginTransaction())
-                    {
-                        // Tạo dự án mới
-                        var newProject = new Project
-                        {
-                            Name = name,
-                            Description = description,
-                            StartDate = DateOnly.FromDateTime(startDate), // Convert DateTime to DateOnly
-                            EndDate = endDate.HasValue ? DateOnly.FromDateTime(endDate.Value) : null, // Handle nullable DateTime
-                            CreatedBy = GetCurrentUserId(),
-                            CreatedAt = DateTime.Now
-                        };
-
-                        // Lưu dự án vào bảng Projects
-                        _context.Projects.Add(newProject);
-                        _context.SaveChanges(); // Lưu để lấy ProjectId
-
-                        // Gán vai trò ProjectManager cho người tạo trong ProjectUserRoles
-                        var projectUserRole = new ProjectUserRole
-                        {
-                            ProjectId = newProject.ProjectId,
-                            UserId = GetCurrentUserId(),
-                            Role = "ProjectManager",
-                            AssignedAt = DateTime.Now
-                        };
-
-                        _context.ProjectUserRoles.Add(projectUserRole);
-                        _context.SaveChanges();
-
-                        // Commit transaction
-                        transaction.Commit();
-
-                        MessageBox.Show("Project created and role assigned successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error creating project or assigning role: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            };
-            createProjectWindow.ShowDialog();
-        }
-
-        int GetCurrentUserId()
+        private int GetCurrentUserId()
         {
             var currentUser = CurrentUser.Instance.Current;
-
             return currentUser.UserId;
-
-
         }
-
-
     }
 }

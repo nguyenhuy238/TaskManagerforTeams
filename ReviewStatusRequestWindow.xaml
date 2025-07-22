@@ -1,0 +1,40 @@
+﻿<Window x:Class="TaskManager.ReviewStatusRequestWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Review Status Request"
+        Height="350"
+        Width="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="{Binding TaskTitle}" FontSize="16" FontWeight="Bold" Margin="0,0,0,10" Grid.Row="0"/>
+        <TextBlock Text="Request Details:" FontWeight="Bold" Margin="0,0,0,5" Grid.Row="1"/>
+        <TextBlock Text="{Binding RequestMessage}" TextWrapping="Wrap" Margin="0,0,0,10" Grid.Row="2"/>
+        <TextBlock Text="Requested Status:" FontWeight="Bold" Margin="0,0,0,5" Grid.Row="3"/>
+        <TextBlock Text="{Binding RequestedStatus}" Margin="0,0,0,10" Grid.Row="4"/>
+        <TextBlock Text="Response Comment (Required for rejection):" FontWeight="Bold" Margin="0,0,0,5" Grid.Row="5"/>
+        <TextBox x:Name="ResponseCommentTextBox" AcceptsReturn="True" Height="80" Margin="0,0,0,10" Grid.Row="6"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="5" Margin="0,10,0,-152" Width="321">
+            <Button x:Name="btnApprove" Content="Approve" Width="100" Margin="0,0,10,0" Click="BtnApprove_Click"
+                    materialDesign:ButtonAssist.CornerRadius="5" Height="36"/>
+            <Button x:Name="btnReject" Content="Reject" Width="100" Margin="0,0,10,0" Click="BtnReject_Click"
+                    materialDesign:ButtonAssist.CornerRadius="5" Height="34"/>
+            <Button x:Name="btnCancel" Content="Cancel" Width="100" Click="BtnCancel_Click"
+                    materialDesign:ButtonAssist.CornerRadius="5" Height="33"/>
+        </StackPanel>
+    </Grid>
+</Window>

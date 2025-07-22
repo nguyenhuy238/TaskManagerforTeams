@@ -48,23 +48,12 @@
                 <DataGridTextColumn Header="Title" Binding="{Binding Title}" />
                 <DataGridTextColumn Header="Status" Binding="{Binding Status}" />
                 <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" />
-                <DataGridTextColumn Header="Due Date" Binding="{Binding DueDate}" />
-                <DataGridTemplateColumn Header="Change Status">
+                <DataGridTextColumn Header="Due Date" Binding="{Binding DueDate, StringFormat={}{0:dd/MM/yyyy}}" />
+                <DataGridTemplateColumn Header="Request Status Update">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <ComboBox x:Name="StatusComboBox" 
-                          Width="100" 
-                          SelectedValue="{Binding Status, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          SelectedValuePath="Content"
-                          DisplayMemberPath="Content">
-                                    <ComboBoxItem Content="ToDo"/>
-                                    <ComboBoxItem Content="InProgress"/>
-                                    <ComboBoxItem Content="Done"/>
-                                </ComboBox>
-                                <Button Content="Update" Click="UpdateStatus_Click" Margin="5,0,0,0"
-                        materialDesign:ButtonAssist.CornerRadius="5"/>
-                            </StackPanel>
+                            <Button Content="Request Status Update" Click="RequestStatusUpdate_Click" 
+                                    materialDesign:ButtonAssist.CornerRadius="5"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -78,6 +67,7 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
+
 
         <!-- Khu vực thông báo -->
         <StackPanel Grid.Row="2" Margin="10">

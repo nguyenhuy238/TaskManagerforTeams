@@ -13,11 +13,14 @@ public partial class Notification
 
     public string Message { get; set; } = null!;
 
-    public bool? IsRead { get; set; }
+    public bool? IsRead { get; set; } = false;
 
-    public DateTime? CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; } = DateTime.Now;
 
     public virtual Task? Task { get; set; }
 
     public virtual User User { get; set; } = null!;
+
+    public string RequestedStatus { get; set; } = string.Empty;
+    public string Comment { get; set; } = string.Empty;
 }

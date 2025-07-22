@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 E:\Project_Manager\Task-Manager-for-Teams\App.xaml
-11-747977961
+151512008240
 
-28-1924921710
+32-231634511
 248181340984
-AdminView.xaml;CreateProjectWindow.xaml;CreateTaskWindow.xaml;GuestView.xaml;LoginView.xaml;MainWindow.xaml;ProjectManagerView.xaml;TaskDetailsWindow.xaml;TaskViewWindow.xaml;TeamMemberView.xaml;UpdateStatusDialog.xaml;
+AdminView.xaml;AssignTeamMemberWindow.xaml;CreateProjectWindow.xaml;CreateTaskWindow.xaml;GuestView.xaml;LoginView.xaml;MainWindow.xaml;NotificationsWindow.xaml;ProjectManagerView.xaml;RequestStatusWindow.xaml;ReviewStatusRequestWindow.xaml;TaskDetailsWindow.xaml;TaskViewWindow.xaml;TeamMemberView.xaml;UpdateStatusDialog.xaml;
 
 False
 

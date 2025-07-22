@@ -97,85 +97,24 @@ namespace TaskManager
             }
         }
 
-        private void UpdateStatus_Click(object sender, RoutedEventArgs e)
+        private void RequestStatusUpdate_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
-            if (button != null)
+            var task = button?.DataContext as AssignedTaskViewModel;
+            if (task != null)
             {
-                var stackPanel = button.Parent as StackPanel;
-                var comboBox = stackPanel?.Children.OfType<ComboBox>().FirstOrDefault();
-                var task = button.DataContext as AssignedTaskViewModel;
-                if (comboBox != null && task != null)
+                var existingRequest = _context.Notifications
+                    .Any(n => n.TaskId == task.TaskId && n.UserId == _currentUserId && n.IsRead == false && !string.IsNullOrEmpty(n.RequestedStatus));
+                if (existingRequest)
                 {
-                    var newStatus = comboBox.SelectedValue as string;
-                    if (!string.IsNullOrEmpty(newStatus) && new[] { "ToDo", "InProgress", "Done" }.Contains(newStatus))
-                    {
-                        try
-                        {
-                            var dialog = new UpdateStatusDialog(task.Status);
-                            dialog.Owner = Window.GetWindow(this);
-                            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.Comment))
-                            {
-                                var dbTask = _context.Tasks.Find(task.TaskId);
-                                if (dbTask != null)
-                                {
-                                    dbTask.Status = newStatus;
-                                    if (newStatus == "Done")
-                                        dbTask.CompletedAt = DateTime.Now;
-
-                                    _context.TaskComments.Add(new TaskComment
-                                    {
-                                        TaskId = task.TaskId,
-                                        UserId = _currentUserId,
-                                        CommentText = dialog.Comment,
-                                        CreatedAt = DateTime.Now
-                                    });
-
-                                    _context.ActivityLogs.Add(new ActivityLog
-                                    {
-                                        UserId = _currentUserId,
-                                        TaskId = task.TaskId,
-                                        Action = "Update Status",
-                                        Description = $"Task {task.TaskId} status changed to {newStatus} by {CurrentUser.Instance.Current.FullName}",
-                                        CreatedAt = DateTime.Now
-                                    });
-
-                                    var projectManagerIds = _context.ProjectUserRoles
-                                        .Where(pur => pur.ProjectId == dbTask.ProjectId && pur.Role == "ProjectManager")
-                                        .Select(pur => pur.UserId)
-                                        .ToList();
-                                    foreach (var pmId in projectManagerIds)
-                                    {
-                                        _context.Notifications.Add(new Notification
-                                        {
-                                            UserId = pmId,
-                                            TaskId = task.TaskId,
-                                            Message = $"Task {task.Title} status updated to {newStatus} by {CurrentUser.Instance.Current.FullName}",
-                                            IsRead = false,
-                                            CreatedAt = DateTime.Now
-                                        });
-                                    }
-
-                                    _context.SaveChanges();
-                                    task.Status = newStatus;
-                                    MessageBox.Show("Task status updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                                }
-                            }
-                            else if (dialog.ShowDialog() == true && string.IsNullOrWhiteSpace(dialog.Comment))
-                            {
-                                MessageBox.Show("Comment is required to update status.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show($"Error updating task status: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Invalid status value.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                    MessageBox.Show("A status update request for this task is already pending.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
+
+                var requestStatusWindow = new RequestStatusWindow(task.TaskId);
+                requestStatusWindow.Owner = Window.GetWindow(this);
+                requestStatusWindow.RequestSubmitted += LoadNotifications;
+                requestStatusWindow.ShowDialog();
             }
         }
 
