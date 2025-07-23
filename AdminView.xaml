@@ -16,18 +16,18 @@
         <!-- Tiêu đề -->
         <Grid Grid.Row="0">
             <TextBlock Text="Admin Dashboard"
-                       FontSize="24"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Margin="0,10"/>
+                    FontSize="24"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="0,10"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,0">
                 <Button x:Name="btnLogout"
-                        Content="Logout"
-                        Width="100"
-                        Height="30"
-                        materialDesign:ButtonAssist.CornerRadius="5"
-                        Click="Logout_Click"/>
+                     Content="Logout"
+                     Width="100"
+                     Height="30"
+                     materialDesign:ButtonAssist.CornerRadius="5"
+                     Click="Logout_Click"/>
             </StackPanel>
         </Grid>
 
@@ -40,8 +40,8 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <DataGrid x:Name="UsersDataGrid"
-                              AutoGenerateColumns="False"
-                              Margin="0,0,0,10">
+                           AutoGenerateColumns="False"
+                           Margin="0,0,0,10">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="User ID" Binding="{Binding UserId}" />
                             <DataGridTextColumn Header="Username" Binding="{Binding Username}" />
@@ -61,6 +61,7 @@
                     </DataGrid>
                     <StackPanel Grid.Row="1" Orientation="Horizontal">
                         <Button Content="Add User" Click="AddUser_Click" Margin="0,0,10,0"/>
+                        <Button Content="Assign User to Project" Click="AssignUserToProject_Click" Margin="0,0,10,0"/>
                     </StackPanel>
                 </Grid>
             </TabItem>
@@ -74,19 +75,24 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Button x:Name="btnCreateProject"
-                            Content="Create Project"
-                            Width="120"
-                            Height="30"
-                            materialDesign:ButtonAssist.CornerRadius="5"
-                            Click="CreateProject_Click"
-                            Margin="10,0,0,10"
-                            HorizontalAlignment="Left" Grid.ColumnSpan="2"/>
+                         Content="Create Project"
+                         Width="120"
+                         Height="30"
+                         materialDesign:ButtonAssist.CornerRadius="5"
+                         Click="CreateProject_Click"
+                         Margin="10,0,0,10"
+                         HorizontalAlignment="Left" Grid.ColumnSpan="2"/>
+                    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="140,0,0,10">
+                        <Button Content="Edit Project" Click="EditProject_Click" Margin="0,0,10,0"/>
+                        <Button Content="Delete Project" Click="DeleteProject_Click" Margin="0,0,10,0"/>
+                    </StackPanel>
                     <DataGrid x:Name="ProjectsDataGrid"
-                              Grid.Row="1"
-                              AutoGenerateColumns="False"
-                              Margin="10,10,10,10" Grid.ColumnSpan="3">
+                           Grid.Row="1"
+                           AutoGenerateColumns="False"
+                           Margin="10,10,10,10" Grid.ColumnSpan="3">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Project ID" Binding="{Binding ProjectId}" />
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
@@ -96,14 +102,46 @@
                     </DataGrid>
                 </Grid>
             </TabItem>
+            <TabItem Header="Payroll Config">
+                <StackPanel Margin="10">
+                    <TextBlock Text="Payroll Bonus/Penalty Config" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <Button Content="Update Payroll Config" Click="AddOrUpdatePayrollConfig_Click" Width="180" Margin="0,0,0,10"/>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Activity Logs">
+                <StackPanel Margin="10">
+                    <Button Content="Load Activity Logs" Click="LoadActivityLogs" Width="160" Margin="0,0,0,10"/>
+                    <DataGrid x:Name="ActivityLogsDataGrid" AutoGenerateColumns="False" Height="200">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Log ID" Binding="{Binding LogId}" />
+                            <DataGridTextColumn Header="User ID" Binding="{Binding UserId}" />
+                            <DataGridTextColumn Header="Action" Binding="{Binding Action}" />
+                            <DataGridTextColumn Header="Description" Binding="{Binding Description}" />
+                            <DataGridTextColumn Header="Created At" Binding="{Binding CreatedAt}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Performance Report">
+                <StackPanel Margin="10">
+                    <Button Content="Load Performance Report" Click="LoadPerformanceReport" Width="180" Margin="0,0,0,10"/>
+                    <DataGrid x:Name="PerformanceReportDataGrid" AutoGenerateColumns="False" Height="200">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="User" Binding="{Binding User}" />
+                            <DataGridTextColumn Header="Quality Score" Binding="{Binding QualityScore}" />
+                            <DataGridTextColumn Header="Evaluated At" Binding="{Binding EvaluatedAt}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </TabItem>
         </TabControl>
 
         <!-- Khu vực phê duyệt lương và báo cáo -->
         <StackPanel Grid.Row="2" Margin="10">
             <TextBlock Text="Payroll Approval" FontWeight="Bold" Margin="0,0,0,5"/>
             <DataGrid x:Name="PayrollDataGrid"
-                      AutoGenerateColumns="False"
-                      Margin="0,0,0,10">
+                   AutoGenerateColumns="False"
+                   Margin="0,0,0,10">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Payroll ID" Binding="{Binding PayrollId}" />
                     <DataGridTextColumn Header="User ID" Binding="{Binding UserId}" />
